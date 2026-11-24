@@ -3,11 +3,13 @@ package it.unibo.mahjongsol.controller;
 import it.unibo.mahjongsol.api.Position;
 import it.unibo.mahjongsol.api.Tile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * Interfaccia del Controller che media tra la View (JavaFX) e il Model (GameEngine).
+ * Interfaccia del Controller che media tra la View (JavaFX) e il Model
+ * (GameEngine).
  */
 public interface GameController {
 
@@ -52,4 +54,17 @@ public interface GameController {
      * @return true se non ci sono più mosse disponibili.
      */
     boolean isGameOver();
+
+    /**
+     * @return Un Optional contenente una coppia di posizioni suggerite, se
+     *         presente.
+     */
+    Optional<List<Position>> getHint();
+
+    /**
+     * Annulla l'ultima mossa effettuata.
+     *
+     * @return true se una mossa è stata annullata, false altrimenti.
+     */
+    boolean undo();
 }

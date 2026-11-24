@@ -10,7 +10,7 @@ public interface Board {
 
     /**
      * Recupera una tessera in base alle sue coordinate tridimensionali.
-     * 
+     *
      * @param x Posizione orizzontale
      * @param y Posizione verticale
      * @param z Livello di altezza (layer)
@@ -44,4 +44,12 @@ public interface Board {
      * @return true se la tessera era presente ed è stata rimossa, false altrimenti
      */
     boolean removeTile(Position pos);
+
+    /**
+     * Riposiziona una tessera in una specifica coordinata 3D (usato per l'Undo).
+     *
+     * @param pos  Le coordinate 3D in cui reinserire la tessera
+     * @param tile La tessera da posizionare
+     */
+    void placeTile(Position pos, Tile tile);
 }

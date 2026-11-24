@@ -48,7 +48,8 @@ public class BoardImpl implements Board {
 
         // 1. Controlla se c'è una tessera sopra
         boolean hasTileAbove = tiles.keySet().stream()
-                .anyMatch(p -> p.z() == pos.z() + 1 && Math.abs(p.x() - pos.x()) <= 1 && Math.abs(p.y() - pos.y()) <= 1);
+                .anyMatch(
+                        p -> p.z() == pos.z() + 1 && Math.abs(p.x() - pos.x()) <= 1 && Math.abs(p.y() - pos.y()) <= 1);
 
         if (hasTileAbove) {
             return false;
@@ -70,6 +71,11 @@ public class BoardImpl implements Board {
      */
     public boolean removeTile(Position pos) {
         return tiles.remove(pos) != null;
+    }
+
+    @Override
+    public void placeTile(final Position pos, final Tile tile) {
+        this.tiles.put(pos, tile);
     }
 
     public Map<Position, Tile> getTiles() {
