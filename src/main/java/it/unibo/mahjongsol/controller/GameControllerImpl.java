@@ -6,6 +6,7 @@ import it.unibo.mahjongsol.model.BoardImpl;
 import it.unibo.mahjongsol.model.GameEngineImpl;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -61,5 +62,15 @@ public class GameControllerImpl implements GameController {
     @Override
     public boolean isGameOver() {
         return this.engine.isGameOver();
+    }
+
+    @Override
+    public Optional<List<Position>> getHint() {
+        return this.engine.getHint();
+    }
+
+    @Override
+    public boolean undo() {
+        return this.engine.undo();
     }
 }

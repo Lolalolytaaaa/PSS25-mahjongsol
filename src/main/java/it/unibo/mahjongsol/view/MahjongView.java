@@ -21,7 +21,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,6 +46,7 @@ public class MahjongView {
     private final Pane boardPane;
     private final Label scoreLabel;
     private final Label remainingLabel;
+    private List<Position> hintedPositions;
 
     public MahjongView(final GameController controller) {
         this.controller = controller;
@@ -51,6 +54,7 @@ public class MahjongView {
         this.boardPane = new Pane();
         this.scoreLabel = new Label();
         this.remainingLabel = new Label();
+        this.hintedPositions = Collections.emptyList();
 
         setupLayout();
         render();
@@ -64,7 +68,7 @@ public class MahjongView {
         this.root.setStyle("-fx-background-color: #2E4A3E;");
 
         // Barra superiore (HUD)
-        final HBox topBar = new HBox(24);
+        final HBox topBar = new HBox(20);
         topBar.setAlignment(Pos.CENTER_LEFT);
         topBar.setPadding(new Insets(14, 24, 14, 24));
         topBar.setStyle("-fx-background-color: #1F332B; -fx-border-color: #3D6152; -fx-border-width: 0 0 2 0;");
@@ -79,17 +83,34 @@ public class MahjongView {
         this.remainingLabel.setFont(Font.font("System", FontWeight.NORMAL, 15));
         this.remainingLabel.setTextFill(Color.web("#D5E2DC"));
 
+        final String btnStyle = "-fx-background-color: #4A7C66; -fx-text-fill: white; "
+                + "-fx-font-weight: bold; -fx-padding: 8 16 8 16; -fx-background-radius: 6; -fx-cursor: hand;";
+
         final Button newGameBtn = new Button("Nuova Partita");
-        newGameBtn.setStyle(
-                "-fx-background-color: #4A7C66; -fx-text-fill: white; "
-                + "-fx-font-weight: bold; -fx-padding: 8 16 8 16; -fx-background-radius: 6; -fx-cursor: hand;"
-        );
+        newGameBtn.setStyle(btnStyle);
         newGameBtn.setOnAction(e -> {
             this.controller.newGame();
+            this.hintedPositions = Collections.emptyList();
             render();
         });
 
-        topBar.getChildren().addAll(titleLabel, this.scoreLabel, this.remainingLabel, newGameBtn);
+        final Button hintBtn = new Button("Suggerimento");
+        hintBtn.setStyle(btnStyle);
+        hintBtn.setOnAction(e -> {
+            this.hintedPositions = this.controller.getHint().orElse(Collections.emptyList());
+            render();
+        });
+
+        final Button undoBtn = new Button("Annulla");
+        undoBtn.setStyle(btnStyle);
+        undoBtn.setOnAction(e -> {
+            if (this.controller.undo()) {
+                this.hintedPositions = Collections.emptyList();
+                render();
+            }
+        });
+
+        topBar.getChildren().addAll(titleLabel, this.scoreLabel, this.remainingLabel, newGameBtn, hintBtn, undoBtn);
         this.root.setTop(topBar);
 
         // Area centrale della plancia
@@ -109,7 +130,8 @@ public class MahjongView {
         this.scoreLabel.setText("Punteggio: " + this.controller.getScore());
         this.remainingLabel.setText("Tessere rimaste: " + tiles.size());
 
-        // Ordina per z crescente (dal basso verso l'alto), poi per y e x per la corretta sovrapposizione 3D
+        // Ordina per z crescente (dal basso verso l'alto), poi per y e x per la
+        // corretta sovrapposizione 3D
         tiles.entrySet().stream()
                 .sorted(Comparator
                         .comparingInt((Map.Entry<Position, Tile> e) -> e.getKey().z())
@@ -126,7 +148,8 @@ public class MahjongView {
                 });
     }
 
-    private StackPane createTileNode(final Position pos, final Tile tile, final boolean isSelected, final boolean isFree) {
+    private StackPane createTileNode(final Position pos, final Tile tile, final boolean isSelected,
+            final boolean isFree) {
         final double screenX = BOARD_PADDING_X + pos.x() * STEP_X + pos.z() * LAYER_OFFSET_X;
         final double screenY = BOARD_PADDING_Y + pos.y() * STEP_Y + pos.z() * LAYER_OFFSET_Y;
 
@@ -137,6 +160,10 @@ public class MahjongView {
         if (isSelected) {
             base.setFill(Color.web("#FFF3B0"));
             base.setStroke(Color.web("#E09F3E"));
+            base.setStrokeWidth(3.0);
+        } else if (this.hintedPositions.contains(pos)) {
+            base.setFill(Color.web("#D8F3DC"));
+            base.setStroke(Color.web("#2D6A4F"));
             base.setStrokeWidth(3.0);
         } else if (isFree) {
             base.setFill(Color.web("#FAF6EE"));
@@ -176,6 +203,7 @@ public class MahjongView {
             tilePane.setStyle("-fx-cursor: hand;");
             tilePane.setOnMouseClicked(event -> {
                 this.controller.onTileClicked(pos);
+                this.hintedPositions = Collections.emptyList();
                 render();
                 checkEndGame();
             });
@@ -186,9 +214,11 @@ public class MahjongView {
 
     private void checkEndGame() {
         if (this.controller.isVictory()) {
-            showEndAlert("Vittoria!", "Complimenti, hai rimosso tutte le tessere! Punteggio finale: " + this.controller.getScore());
+            showEndAlert("Vittoria!",
+                    "Complimenti, hai rimosso tutte le tessere! Punteggio finale: " + this.controller.getScore());
         } else if (this.controller.isGameOver()) {
-            showEndAlert("Nessuna mossa disponibile", "Game Over! Non ci sono più coppie libere. Punteggio: " + this.controller.getScore());
+            showEndAlert("Nessuna mossa disponibile",
+                    "Game Over! Non ci sono più coppie libere. Punteggio: " + this.controller.getScore());
         }
     }
 
